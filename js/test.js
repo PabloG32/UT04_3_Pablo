@@ -1,5 +1,5 @@
 
-import { Dish, Category, Allergen, Restaurant, Coordinate } from './entities/restaurante.js';
+import { Dish, Category, Allergen, Menu, Restaurant, Coordinate, } from './entities/restaurante.js';
 import RestaurantsManager from './restaurantsManager.js';
 
 
@@ -19,25 +19,91 @@ const manager1 = RestaurantsManager.getInstance("MiSistema");
 
 console.log(manager1);
 
-console.log("----------------------------------------------------------------------------")
-// Ejemplo de uso
-// Ejemplo de uso
-const manager = RestaurantsManager.getInstance("MiSistema");
+console.log("---------------------------------------------")
 
-const category1 = new Category("Categoria1", "Descripción de la categoría 1");
-const category2 = new Category("Categoria2", "Descripción de la categoría 2");
+// Asegúrate de proporcionar la ruta correcta
 
-manager.addCategory(category1).addCategory(category2);
+const manager = RestaurantsManager.getInstance();
 
-const dish1 = new Dish("Plato1", "Descripción del plato 1");
-const dish2 = new Dish("Plato2", "Descripción del plato 2");
+// Añadir categorías
+const categoria1 = new Category("Categoria 1");
+const categoria2 = new Category("Categoria 2");
 
-manager.addDish(dish1).addDish(dish2);
+try {
+    manager.addCategory(categoria1, categoria2);
+    console.log("Categorías añadidas correctamente");
+} catch (error) {
+    console.error(error);
+}
 
-manager.assignCategoryToDish("Plato1", "Categoria1").assignCategoryToDish("Plato2", "Categoria2");
+// Intentar añadir la misma categoría nuevamente debería lanzar un error
+try {
+    manager.addCategory(categoria1);
+} catch (error) {
+    console.error(error.message);
+}
 
-console.log(manager.getCategories()); // Mostrar las categorías antes de la eliminación
+// Iterar sobre las categorías
+console.log("Categorías existentes:");
+for (const category of manager.categories) {
+    console.log(category.name);
+}
 
-manager.removeCategory("Categoria1").removeCategory("CategoriaNoRegistrada");
 
-console.log(manager.getCategories()); 
+// Añadir platos
+const plato1 = new Dish("Plato 1");
+const plato2 = new Dish("Plato 2");
+
+try {
+    manager.addDish(plato1, plato2);
+    console.log("Platos añadidos correctamente");
+} catch (error) {
+    console.error(error.message);
+}
+
+// Intentar añadir el mismo plato nuevamente debería lanzar un error
+try {
+    manager.addDish(plato1);
+} catch (error) {
+    console.error(error.message);
+}
+
+// Obtener la lista de platos
+console.log("Platos existentes:");
+const dishes = manager.dishes;
+for (const dish of dishes) {
+    console.log(dish.name);
+}
+
+// Añadir categoría y platos
+const categoria = new Category("CategoriaA");
+const plato3 = new Dish("Plato 3");
+const plato4 = new Dish("Plato 4");
+
+try {
+    manager.assignCategoryToDish(categoria, plato3, plato4);
+    console.log("Categoría y platos añadidos correctamente");
+} catch (error) {
+    console.error(error.message);
+}
+
+// Intentar añadir el mismo plato en la misma categoría debería lanzar un error
+try {
+    manager.assignCategoryToDish(categoria, plato3);
+} catch (error) {
+    console.error(error.message);
+}
+
+// Obtener la lista de categorías y sus platos
+console.log("Categorías existentes:");
+const categories = manager.categories;
+for (const category of categories) {
+    console.log(`Categoría: ${category.name}`);
+
+    // Obtener los platos solo en su categoría
+    const categoryDishes = manager.getCategoryDishes(category);
+
+    for (const dish of categoryDishes) {
+        console.log(`  - Plato: ${dish.name}`);
+    }
+}

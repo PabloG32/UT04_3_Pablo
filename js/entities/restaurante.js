@@ -125,7 +125,6 @@ class Category {
     toString() {
         return `Category: ${this.#name} Descripción: ${this.#description}`;
     }
-
 }
 
 class Allergen {
@@ -181,7 +180,7 @@ class Menu extends Dish {
     #description; //Descripción del menú.
 
     //Constructor
-    constructor(name, description) {
+    constructor(name, description = "") {
         //Excepciones
         if (!new.target) throw new InvalidAccessConstructorException();
         if (!name) throw new EmptyValueException("name");
