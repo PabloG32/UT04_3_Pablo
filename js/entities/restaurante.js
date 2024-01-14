@@ -174,7 +174,7 @@ class Allergen {
     }
 }
 
-class Menu extends Dish {
+class Menu {
     //Propiedades
     #name; //Nombre del menú.
     #description; //Descripción del menú.
@@ -186,7 +186,6 @@ class Menu extends Dish {
         if (!name) throw new EmptyValueException("name");
         if (typeof name != "string") throw new InvalidValueException("name", "String");
         if (typeof description != "string") throw new InvalidValueException("description", "String");
-
 
         this.#name = name;
         this.#description = description;
