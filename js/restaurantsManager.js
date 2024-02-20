@@ -7,7 +7,7 @@ import {
 } from './exceptions.js';
 
 import {
-    Dish, Category, Allergen, Menu, Restaurant, Coordinate
+    Dish, Category, Allergen, Menu, Restaurant
 } from './entities/restaurante.js';
 
 //Excepciones
@@ -163,16 +163,23 @@ const RestaurantsManager = (function () {
             });
         }
 
+        //Getter allergen
+        getAllergens() {
+            return [...this.#allergenes.values()].map(entry => entry.allergen);
+        }
+
+        getMenus() {
+            return [...this.#menus.values()].map(entry => entry.menu);
+        }
+
         //Añade una nueva categoría.
         addCategory(...categories) {
             for (const category of categories) {
-                if (!(category instanceof Category)) {
-                    throw new ObjecManagerException('category', 'Category');
-                }
+                if (!(category instanceof Category)) throw new ObjecManagerException('category', 'Category');
                 if (!this.#categories.has(category.name)) {
                     this.#categories.set(category.name, {
                         category,
-                        dishes: new Map(),
+                        dishes: new Map()
                     });
                 } else {
                     throw new CategoryExistsException(category);
@@ -184,9 +191,8 @@ const RestaurantsManager = (function () {
         //Elimina una categoría. Los platos quedarán desasignados de la categoría.
         removeCategory(...categories) {
             for (const category of categories) {
-                if (!(category instanceof Category)) {
-                    throw new ObjecManagerException('category', 'Category');
-                }
+                if (!(category instanceof Category)) throw new ObjecManagerException('category', 'Category');
+
                 if (this.#categories.has(category.name)) {
                     this.#categories.delete(category.name);
                 } else {
@@ -199,11 +205,13 @@ const RestaurantsManager = (function () {
         //Añade un nuevo menú.
         addMenu(...menus) {
             for (const menu of menus) {
-                if (!(menu instanceof Menu)) {
-                    throw new ObjecManagerException('menus', 'Menu');
-                }
+                if (!(menu instanceof Menu)) throw new ObjecManagerException('menus', 'Menu');
+
                 if (!this.#menus.has(menu.name)) {
-                    this.#menus.set(menu.name, menu);
+                    this.#menus.set(menu.name, {
+                        menu,
+                        dishes: new Map()
+                    });
                 } else {
                     throw new ProductExistsException(menu);
                 }
@@ -214,9 +222,8 @@ const RestaurantsManager = (function () {
         //Elimina un menú.
         removeMenu(...menus) {
             for (const menu of menus) {
-                if (!(menu instanceof Menu)) {
-                    throw new ObjecManagerException('menu', 'Menu');
-                }
+                if (!(menu instanceof Menu)) throw new ObjecManagerException('menu', 'Menu');
+
                 if (this.#menus.has(menu.name)) {
                     this.#menus.delete(menu.name);
                 } else {
@@ -229,11 +236,14 @@ const RestaurantsManager = (function () {
         //Añade un nuevo alérgeno.
         addAllergen(...allergenes) {
             for (const allergen of allergenes) {
-                if (!(allergen instanceof Allergen)) {
-                    throw new ObjecManagerException('allergen', 'Allergen');
-                }
+                if (!(allergen instanceof Allergen)) throw new ObjecManagerException('allergen', 'Allergen');
+
                 if (!this.#allergenes.has(allergen.name)) {
-                    this.#allergenes.set(allergen.name, allergen);
+                    this.#allergenes.set(allergen.name, {
+                        name: allergen.name,
+                        allergen,
+                        dishes: new Map()
+                    });
                 } else {
                     throw new ProductExistsException(allergen);
                 }
@@ -244,9 +254,8 @@ const RestaurantsManager = (function () {
         //Elimina un alérgeno.
         removeAllergen(...allergenes) {
             for (const allergen of allergenes) {
-                if (!(allergen instanceof Allergen)) {
-                    throw new ObjecManagerException('allergen', 'Allergen');
-                }
+                if (!(allergen instanceof Allergen)) throw new ObjecManagerException('allergen', 'Allergen');
+
                 if (this.#allergenes.has(allergen.name)) {
                     this.#allergenes.delete(allergen.name);
                 } else {
@@ -259,9 +268,8 @@ const RestaurantsManager = (function () {
         //Añade un nuevo plato.
         addDish(...dishes) {
             for (const dish of dishes) {
-                if (!(dish instanceof Dish)) {
-                    throw new ObjecManagerException('dishes', 'Dish');
-                }
+                if (!(dish instanceof Dish)) throw new ObjecManagerException('dishes', 'Dish');
+
                 if (!this.#dishes.has(dish.name)) {
                     this.#dishes.set(dish.name, dish);
                 } else {
@@ -274,9 +282,8 @@ const RestaurantsManager = (function () {
         //Elimina un plato y todas sus asignaciones a categorías, alérgenos y menús.
         removeDish(...dishes) {
             for (const dish of dishes) {
-                if (!(dish instanceof Dish)) {
-                    throw new ObjecManagerException('dish', 'dish');
-                }
+                if (!(dish instanceof Dish)) throw new ObjecManagerException('dish', 'dish');
+
                 if (this.#dishes.has(dish.name)) {
                     for (const category of this.#categories.values()) {
                         if (category.dishes.has(dish.name)) {
@@ -293,17 +300,15 @@ const RestaurantsManager = (function () {
 
         //Asigna un plato a una categoría. Si el objeto Category o Dish no existen se añaden al sistema.
         assignCategoryToDish(category, ...dishes) {
-            if (!(category instanceof Category)) {
-                throw new ObjecManagerException('category', 'Category');
-            }
+            if (!(category instanceof Category)) throw new ObjecManagerException('category', 'Category');
+
             if (!this.#categories.has(category.name)) {
                 this.addCategory(category);
             }
             const storedCategory = this.#categories.get(category.name);
             for (const dish of dishes) {
-                if (!(dish instanceof Dish)) {
-                    throw new ObjecManagerException('dish', 'dish');
-                }
+                if (!(dish instanceof Dish)) throw new ObjecManagerException('dish', 'dish');
+
                 if (!this.#dishes.has(dish.name)) {
                     this.addDish(dish);
                 }
@@ -319,17 +324,14 @@ const RestaurantsManager = (function () {
 
         //Asigna un alérgeno a un plato. Si algún argumento no existe se añade al sistema.
         assignAllergenToDish(dish, ...allergenes) {
-            if (!(dish instanceof Dish)) {
-                throw new ObjecManagerException('dish', 'Dish');
-            }
+            if (!(dish instanceof Dish)) throw new ObjecManagerException('dish', 'Dish');
+
             if (!this.#dishes.has(dish.name)) {
                 this.addDish(dish);
             }
             const storedDish = this.#dishes.get(dish.name);
             for (const allergen of allergenes) {
-                if (!(allergen instanceof Allergen)) {
-                    throw new ObjecManagerException('allergen', 'Allergen');
-                }
+                if (!(allergen instanceof Allergen)) throw new ObjecManagerException('allergen', 'Allergen');
                 if (!this.#allergenes.has(allergen.name)) {
                     this.addAllergen(allergen);
                 }
@@ -345,9 +347,8 @@ const RestaurantsManager = (function () {
 
         //Obtiene un iterador con la relación de los platos a una categoría.
         * getDishesInCategory(category) {
-            if (!(category instanceof Category)) {
-                throw new ObjecManagerException('category', 'Category');
-            }
+            if (!(category instanceof Category)) throw new ObjecManagerException('category', 'Category');
+
             if (this.#categories.has(category.name)) {
                 const storedCategory = this.#categories.get(category.name);
                 const values = storedCategory.dishes.values();
@@ -360,14 +361,13 @@ const RestaurantsManager = (function () {
         }
 
         * getDishesWithAllergen(allergen) {
-            if (!(allergen instanceof Allergen)) {
-                throw new ObjecManagerException('allergen', 'Allergen');
-            }
+            if (!(allergen instanceof Allergen)) throw new ObjecManagerException('allergen', 'Allergen');
+
             if (this.#allergenes.has(allergen.name)) {
                 const storedAllergen = this.#allergenes.get(allergen.name);
-                const values = storedAllergen.allergenes.values();
-                for (const allergen of values) {
-                    yield allergen;
+                const values = storedAllergen.dishes.values();
+                for (const dish of values) {
+                    yield dish;
                 }
             } else {
                 throw new CategoryNotExistException(allergen);
