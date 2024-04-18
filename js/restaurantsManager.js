@@ -148,19 +148,19 @@ const RestaurantsManager = (function () {
                 },
             });
 
-            Object.defineProperty(this, 'restaurants', {
-                enumerable: true,
-                get() {
-                    const values = this.restaurants.values();
-                    return {
-                        *[Symbol.iterator]() {
-                            for (const restaurante of values) {
-                                yield restaurante;
-                            }
-                        },
-                    };
-                },
-            });
+            // Object.defineProperty(this, 'restaurants', {
+            //     enumerable: true,
+            //     get() {
+            //         const values = this.restaurants.values();
+            //         return {
+            //             *[Symbol.iterator]() {
+            //                 for (const restaurante of values) {
+            //                     yield restaurante;
+            //                 }
+            //             },
+            //         };
+            //     },
+            // });
         }
 
         //Getter allergen

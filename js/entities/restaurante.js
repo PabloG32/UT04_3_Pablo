@@ -214,6 +214,10 @@ class Menu {
         });
 
     }
+
+    toString() {
+        return `Menu: ${this.#name} Descripción: ${this.#description}`;
+    }
 }
 
 class Restaurant {
@@ -223,13 +227,13 @@ class Restaurant {
     #location; //Ubicación del restaurante en forma de coordenadas.
 
     //Constructor
-    constructor(name, description, location) {
+    constructor(name, description = "", location = "") {
         //Excepciones
         if (!new.target) throw new InvalidAccessConstructorException();
         if (!name) throw new EmptyValueException("name");
         if (typeof name != "string") throw new InvalidValueException("name", "String");
         if (typeof description != "string") throw new InvalidValueException("description", "String");
-        if (!(location instanceof Coordinate)) throw new InvalidValueException("location", Coordinate);
+        // if (!(location instanceof Coordinate)) throw new InvalidValueException("location", Coordinate);
 
 
         this.#name = name;
