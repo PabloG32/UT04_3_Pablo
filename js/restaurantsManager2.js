@@ -1,10 +1,10 @@
 "use strict";
 import {
     BaseException,
-    InvalidAccessConstructorException,
+    // InvalidAccessConstructorException,
     EmptyValueException,
-    InvalidValueException,
-    AbstractClassException
+    // InvalidValueException,
+    // AbstractClassException
 } from './exceptions.js';
 
 import {
@@ -77,6 +77,15 @@ class ProductExistInCategoryException extends ManagerException {
     }
 }
 
+class DishExistInCategoryException extends ManagerException {
+    constructor(dish, category, fileName, lineNumber) {
+        super(`Error: The ${dish.name} already exist in ${category.name}.`, fileName, lineNumber);
+        this.category = category;
+        this.dish = dish;
+        this.name = 'DishExistInCategoryException';
+    }
+}
+
 class CategoryNotExistException extends ManagerException {
     constructor(category, fileName, lineNumber) {
         super(`Error: The ${category.name} doesn't exist in the manager.`, fileName, lineNumber);
@@ -116,15 +125,56 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             #menus = []; //Colección de menús. Se trata de una agregación de platos.
             #restaurants = []; //Colección de restaurantes.
 
+            constructor() {
+                Object.defineProperty(this, 'dishes', {
+                    enumerable: true,
+                    get() {
+                        const array = this.#dishes;
+                        return {
+                            *[Symbol.iterator]() {
+                                for (const dish of array) {
+                                    yield dish;
+                                }
+                            },
+                        };
+                    },
+                });
+
+                Object.defineProperty(this, 'categories', {
+                    enumerable: true,
+                    get() {
+                        const array = this.#categories;
+                        return {
+                            *[Symbol.iterator]() {
+                                for (const arrayCategory of array) {
+                                    yield arrayCategory.category;
+                                }
+                            },
+                        };
+                    },
+                });
+
+                Object.defineProperty(this, 'menus', {
+                    enumerable: true,
+                    get() {
+                        const array = this.#menus;
+                        return {
+                            *[Symbol.iterator]() {
+                                for (const arrayMenu of array) {
+                                    yield arrayMenu.menu;
+                                }
+                            },
+                        };
+                    },
+                });
+
+            }
+
             //Dado un plato, devuelve su posición
             //Comparamos por contenido no por referencia.
-            #getDishPosition(dish) {
-                if (!(dish instanceof Dish)) {
-                    throw new ObjecManagerException('dish', 'Dish');
-                }
-
+            #getDishPosition(name) {
                 function compareElements(element) {
-                    return (element.dish.name === dish.name)
+                    return (element.name === name)
                 }
 
                 return this.#dishes.findIndex(compareElements);
@@ -132,13 +182,9 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
             //Dado una categoría, devuelve su posición
             //Comparamos por contenido no por referencia.
-            #getCategoryPosition(category) {
-                if (!(category instanceof Category)) {
-                    throw new ObjecManagerException('category', 'Category');
-                }
-
+            #getCategoryPosition(name) {
                 function compareElements(element) {
-                    return (element.category.name === category.name)
+                    return (element.category.name === name)
                 }
 
                 return this.#categories.findIndex(compareElements);
@@ -160,13 +206,9 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
             //Dado un menu, devuelve su posicion
             //Comparamos por contenido no por referencia.
-            #getMenuPosition(menu) {
-                if (!(menu instanceof Menu)) {
-                    throw new ObjecManagerException('menu', 'Menu');
-                }
-
+            #getMenuPosition(name) {
                 function compareElements(element) {
-                    return (element.menu.name === menu.name);
+                    return (element.menu.name === name);
                 }
 
                 return this.#menus.findIndex(compareElements);
@@ -197,192 +239,116 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             }
 
             //Añade un nuevo plato
-            addDish(...dish) {
-                if (!(dish instanceof Dish)) {
-                    throw new ObjecManagerException('dish', 'Dish');
+            addDish(...dishes) {
+                for (let dish of dishes) {
+                    if (!(dish instanceof Dish)) {
+                        throw new ObjecManagerException('dish', 'Dish');
+                    }
+                    let position = this.#getDishPosition(dish.name);
+                    if (position === -1) {
+                        this.#dishes.push(dish);
+                    } else {
+                        throw new DishExistsException(dish);
+                    }
                 }
-                let position = this.#getDishPosition(dish);
-                if (position === -1) {
-                    this.#dishes.push({
-                        dish: dish
-                    });
-                } else {
-                    throw new DishExistsException(dish);
-                }
-
                 return this;
             }
 
+            //Devuelve un objeto Dish si está registrado, o crea un nuevo
+            createDish(name, description = "", ingredients = [], image = "") {
+                let position = this.#getDishPosition(name);
+                if (position != -1) return this.#dishes[position];
+                return new Dish(name, description, ingredients, image);
+            }
 
             //Añade una nueva categoria
-            addCategory(...category) {
+            addCategory(...categories) {
+                for (let category of categories) {
+                    if (!(category instanceof Category)) {
+                        throw new ObjecManagerException('category', 'Category');
+                    }
+                    let position = this.#getCategoryPosition(category.name);
+                    if (position === -1) {
+                        this.#categories.push(
+                            {
+                                category: category,
+                                dishes: []
+                            }
+                        );
+                    } else {
+                        throw new CategoryExistsException(category);
+                    }
+                }
+                return this;
+            }
+
+            createCategory(name, description = "") {
+                let position = this.#getCategoryPosition(name);
+                if (position != -1) return this.#categories[position];
+                return new Category(name, description);
+            }
+
+            assignCategoryToDish(category, ...dishes) {
                 if (!(category instanceof Category)) {
                     throw new ObjecManagerException('category', 'Category');
                 }
-                let position = this.#getCategoryPosition(category);
-                if (position === -1) {
-                    // Añade objeto literal con una propiedad para la categoría y un array para las imágenes dentro de la categoría
-                    this.#categories.push(
-                        {
-                            category: category,
-                            dishes: []
-                        }
-                    );
-                } else {
-                    throw new CategoryExistsException();
-                }
 
-                return this;
-            }
-
-            //Elimina una categoría
-            removeCategory(category) {
-                if (!(category instanceof Category)) {
-                    throw new CategoryImageManagerException();
-                }
-                let position = this.#getCategoryPosition(category);
-                if (position !== -1) {
-                    // Recogemos todas los índices de las categorías menos las de por defecto y la que estamos borrando
-                    let restPositions = Array.from(Array(this.#categories.length), (el, i) => i);
-                    restPositions.splice(position, 1);
-                    restPositions.splice(0, 1);
-                    // Recorremos todos los platos de la categoría que estamos borrando 
-                    for (let dish of this.#categories[position].dishes) {
-                        let insertInDefault = true;
-                        for (let index of restPositions) { // Chequeamos si cada imagen pertenece a otra categoría que no sea la de por defecto
-                            if (this.#getDishPosition(dish, this.#categories[index].dishes) > -1) {
-                                insertInDefault = false;
-                                break;
-                            }
-                        }
-                        if (insertInDefault) this.#categories[0].dishes.push(dish);
+                for (let dish of dishes) {
+                    if (!(dish instanceof Dish)) {
+                        throw new ObjecManagerException('dish', 'Dish');
                     }
-                    this.#categories.splice(position, 1);
-                } else {
-                    throw new CategoryNotExistsImageManagerException();
-                }
-                return this;
-            }
-
-
-            //Añade un nuevo menu
-            addMenu(...menu) {
-                if (!(menu instanceof Menu)) {
-                    throw new ObjecManagerException('menu', 'Menu');
-                }
-                let position = this.#getMenuPosition(menu);
-                if (position === -1) {
-                    // Añade objeto literal con una propiedad para la categoría y un array para las imágenes dentro de la categoría
-                    this.#menus.push(
-                        {
-                            menu: menu,
-                            dishes: []
-                        }
-                    );
-                } else {
-                    throw new ManuExistsException();
                 }
 
-                return this;
-            }
-
-            //Elimina un menu
-            removeMenu(menu) {
-                if (!(menu instanceof Menu)) {
-                    throw new ObjecManagerException('menu', 'Menu');
-                }
-                let position = this.#getMenuPosition(menu);
-                if (position !== -1) {
-                    // Recogemos todas los índices de las categorías menos las de por defecto y la que estamos borrando
-                    let restPositions = Array.from(Array(this.#menus.length), (el, i) => i);
-                    restPositions.splice(position, 1);
-                    restPositions.splice(0, 1);
-                    // Recorremos todos los platos de la categoría que estamos borrando 
-                    for (let dish of this.#menus[position].dishes) {
-                        let insertInDefault = true;
-                        for (let index of restPositions) { // Chequeamos si cada imagen pertenece a otra categoría que no sea la de por defecto
-                            if (this.#getDishPosition(dish, this.#menus[index].dishes) > -1) {
-                                insertInDefault = false;
-                                break;
-                            }
-                        }
-                        if (insertInDefault) this.#menus[0].dishes.push(dish);
+                for (let dish of dishes) {
+                    let positionDish = this.#getDishPosition(dish.name);
+                    if (positionDish === -1) {
+                        this.addDish(dish);
+                        positionDish = this.#getCategoryPosition(dish.name);
                     }
-                    this.#menus.splice(position, 1);
-                } else {
-                    throw new CategoryNotExistsImageManagerException();
-                }
-                return this;
-            }
 
-            //Añade un nuevo alergeno
-            addAllergen(...allergen) {
-                if (!(allergen instanceof Allergen)) {
-                    throw new ObjecManagerException('allergen', 'Allergen');
-                }
-                let position = this.#getCategoryPosition(allergen);
-                if (position === -1) {
-                    // Añade objeto literal con una propiedad para la categoría y un array para las imágenes dentro de la categoría
-                    this.#allergenes.push(
-                        {
-                            allergen: allergen,
-                            dishes: []
-                        }
-                    );
-                } else {
-                    throw new AllergenExistsException();
-                }
-
-                return this;
-            }
-
-            //Elimina un alergeno
-            removeAllergen(allergen) {
-                if (!(allergen instanceof Allergen)) {
-                    throw new ObjecManagerException('allergen', 'Allergen');
-                }
-                let position = this.#getAllergenPosition(allergen);
-                if (position !== -1) {
-                    // Recogemos todas los índices de las categorías menos las de por defecto y la que estamos borrando
-                    let restPositions = Array.from(Array(this.#allergenes.length), (el, i) => i);
-                    restPositions.splice(position, 1);
-                    restPositions.splice(0, 1);
-                    // Recorremos todos los platos de la categoría que estamos borrando 
-                    for (let dish of this.#allergenes[position].dishes) {
-                        let insertInDefault = true;
-                        for (let index of restPositions) { // Chequeamos si cada imagen pertenece a otra categoría que no sea la de por defecto
-                            if (this.#getDishPosition(dish, this.#allergenes[index].dishes) > -1) {
-                                insertInDefault = false;
-                                break;
-                            }
-                        }
-                        if (insertInDefault) this.#allergenes[0].dishes.push(dish);
+                    let positionCat = this.#getCategoryPosition(category.name);
+                    if (positionCat === -1) {
+                        this.addCategory(category);
+                        positionCat = this.#getCategoryPosition(category.name);
                     }
-                    this.#allergenes.splice(position, 1);
 
-                } else {
-                    throw new CategoryNotExistsImageManagerException();
+                    // Verificar si el plato ya existe en la categoría
+                    if (this.#categories[positionCat].dishes.includes(this.#dishes[positionDish])) {
+                        throw new DishExistInCategoryException('dish', 'category');
+                    }
+
+                    this.#categories[positionCat].dishes.push(this.#dishes[positionDish]);
+                    console.log(this.#categories[positionCat]);
+                }
+
+            }
+
+            //Añade un nuevo menú.
+            addMenu(...menus) {
+                for (let menu of menus) {
+                    if (!(menu instanceof Menu)) {
+                        throw new ObjecManagerException('menu', 'Menu');
+                    }
+                    let position = this.#getMenuPosition(menu.name);
+                    if (position === -1) {
+                        this.#menus.push(
+                            {
+                                menu: menu,
+                                dishes: []
+                            }
+                        );
+                    } else {
+                        throw new ManuExistsException(menu);
+                    }
                 }
                 return this;
             }
 
-            //Añade un nuevo restaurante
-            addRestaurant(...restaurant) {
-                if (!(restaurant instanceof Restaurant)) {
-                    throw new ObjecManagerException('restaurant', 'Restaurant');
-                }
-                let position = this.#getRestaurantPosition(restaurant);
-                if (position === -1) {
-                    this.#restaurants.push(
-                        {
-                            restaurant: restaurant
-                        }
-                    );
-                } else {
-                    throw new AllergenExistsException();
-                }
-
-                return this;
+            //Devuelve un objeto Menu si está registrado, o crea un nuevo.
+            createMenu(name, description = "") {
+                let position = this.#getMenuPosition(name);
+                if (position != -1) return this.#menus[position];
+                return new Menu(name, description);
             }
 
 
