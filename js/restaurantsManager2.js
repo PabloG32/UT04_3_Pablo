@@ -68,18 +68,18 @@ class RestaurantExistsException extends ManagerException {
     }
 }
 
-class ProductExistInCategoryException extends ManagerException {
+class DishExistInCategoryException extends ManagerException {
     constructor(dish, category, fileName, lineNumber) {
         super(`Error: The ${dish.name} already exist in ${category.name}.`, fileName, lineNumber);
         this.category = category;
         this.dish = dish;
-        this.name = 'ProductExistInCategoryException';
+        this.name = 'DishExistInCategoryException';
     }
 }
 
-class DishExistInCategoryException extends ManagerException {
+class DishNotExistInCategoryException extends ManagerException {
     constructor(dish, category, fileName, lineNumber) {
-        super(`Error: The ${dish.name} already exist in ${category.name}.`, fileName, lineNumber);
+        super(`Error: The ${dish.name} not already exist in ${category.name}.`, fileName, lineNumber);
         this.category = category;
         this.dish = dish;
         this.name = 'DishExistInCategoryException';
@@ -314,14 +314,69 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
                     // Verificar si el plato ya existe en la categoría
                     if (this.#categories[positionCat].dishes.includes(this.#dishes[positionDish])) {
-                        throw new DishExistInCategoryException('dish', 'category');
+                        throw new DishExistInCategoryException(dish, category);
                     }
 
                     this.#categories[positionCat].dishes.push(this.#dishes[positionDish]);
-                    console.log(this.#categories[positionCat]);
+                    // console.log(this.#categories[positionCat]);
                 }
 
             }
+
+            deassignCategoryToDish(category, ...dishes) {
+                if (!(category instanceof Category)) {
+                    throw new ObjecManagerException('category', 'Category');
+                }
+
+                for (let dish of dishes) {
+                    if (!(dish instanceof Dish)) {
+                        throw new ObjecManagerException('dish', 'Dish');
+                    }
+                }
+
+                for (let dish of dishes) {
+                    let positionDish = this.#getDishPosition(dish.name);
+                    if (positionDish === -1) {
+                        throw new DishExistsException(dish);
+                    }
+
+                    let positionCat = this.#getCategoryPosition(category.name);
+                    if (positionCat === -1) {
+                        throw new CategoryNotExistException(category);
+                    }
+
+                    // Verificar si el plato existe en la categoría
+                    let dishIndex = this.#categories[positionCat].dishes.findIndex(item => item === this.#dishes[positionDish]);
+                    if (dishIndex === -1) {
+                        throw new DishNotExistInCategoryException(dish, category);
+                    }
+
+                    this.#categories[positionCat].dishes.splice(dishIndex, 1);
+                    // console.log(this.#categories[positionCat]);
+                }
+            }
+
+            removeCategory(category) {
+                if (!(category instanceof Category)) {
+                    throw new ObjecManagerException('category', 'Category');
+                }
+
+                let position = this.#getCategoryPosition(category.name);
+                if (position !== -1) {
+                    // Desasignar todos los platos de la categoría
+                    let categoryDishes = this.#categories[position].dishes;
+                    for (let dish of categoryDishes) {
+                        this.deassignCategoryToDish(category, dish);
+                    }
+                    // Elimina la categoría
+                    this.#categories.splice(position, 1);
+                    return this;
+                } else {
+                    throw new CategoryNotExistException(category);
+                }
+            }
+
+
 
             //Añade un nuevo menú.
             addMenu(...menus) {

@@ -46,9 +46,10 @@ console.log("------------------------------Dish---------------------------------
 // // Añadir platos
 const plato1 = manager.createDish("Plato 1");
 const plato2 = manager.createDish("Plato 2");
+const plato3 = manager.createDish("Plato 3");
 
 try {
-    manager.addDish(plato1, plato2);
+    manager.addDish(plato1, plato2, plato3);
     console.log("Platos añadidos correctamente");
 } catch (error) {
     console.error(error.message);
@@ -73,9 +74,11 @@ console.log("------------------------------Categoria----------------------------
 
 const cat1 = manager.createCategory("Carne");
 const cat2 = manager.createCategory("Pescado");
+const cat3 = manager.createCategory("Verde");
+const cat4 = manager.createCategory("Pollo");
 
 try {
-    manager.addCategory(cat1, cat2);
+    manager.addCategory(cat1, cat2, cat3);
     console.log("Categorias añadidas correctamente");
 } catch (error) {
     console.error(error.message);
@@ -92,12 +95,10 @@ for (let category of manager.categories) {
     console.log(category.toString());
 }
 
-
-
 try {
     manager.assignCategoryToDish(cat1, plato1, plato2);
     // manager.assignCategoryToDish(cat1, plato2);
-    console.log("Añadido");
+    console.log("Asignado correctamente");
 } catch (error) {
     console.log(error.message);
 
@@ -106,11 +107,31 @@ try {
 //Error por que ese plato ya esta en esa categoria
 try {
     manager.assignCategoryToDish(cat1, plato1);
-    console.log("Añadido");
+    console.log("Asignado correctamente:");
 } catch (error) {
-    console.warn(error.message);
+    console.log(error.message);
 
 }
+
+//Error por intentar desasignar un plato que no existe
+try {
+    manager.deassignCategoryToDish(cat1, plato3);
+    console.log("Desasignado correctamente:");
+} catch (error) {
+    console.log(error.message);
+
+}
+
+//Borrar una categoria
+try {
+    manager.removeCategory(cat4);
+    console.log("Categoria borrada correctamente:");
+} catch (error) {
+    console.log(error.message);
+
+}
+
+
 
 
 console.log("-----------------------------Menu---------------------------------------------------");
