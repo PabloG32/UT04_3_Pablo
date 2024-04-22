@@ -47,10 +47,12 @@ console.log("------------------------------Dish---------------------------------
 const plato1 = manager.createDish("Plato 1");
 const plato2 = manager.createDish("Plato 2");
 const plato3 = manager.createDish("Plato 3");
+const plato4 = manager.createDish("Plato 4");
+const plato5 = manager.createDish("Plato 5");
 
 try {
     manager.addDish(plato1, plato2, plato3);
-    console.log("Platos añadidos correctamente");
+    console.warn("Platos añadidos correctamente");
 } catch (error) {
     console.error(error.message);
 }
@@ -79,7 +81,7 @@ const cat4 = manager.createCategory("Pollo");
 
 try {
     manager.addCategory(cat1, cat2, cat3);
-    console.log("Categorias añadidas correctamente");
+    console.warn("Categorias añadidas correctamente");
 } catch (error) {
     console.error(error.message);
 }
@@ -98,36 +100,36 @@ for (let category of manager.categories) {
 try {
     manager.assignCategoryToDish(cat1, plato1, plato2);
     // manager.assignCategoryToDish(cat1, plato2);
-    console.log("Asignado correctamente");
+    console.warn("Asignado correctamente");
 } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
 
 }
 
 //Error por que ese plato ya esta en esa categoria
 try {
     manager.assignCategoryToDish(cat1, plato1);
-    console.log("Asignado correctamente:");
+    console.warn("Asignado correctamente:");
 } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
 
 }
 
 //Error por intentar desasignar un plato que no existe
 try {
     manager.deassignCategoryToDish(cat1, plato3);
-    console.log("Desasignado correctamente:");
+    console.warn("Desasignado correctamente:");
 } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
 
 }
 
 //Borrar una categoria
 try {
     manager.removeCategory(cat4);
-    console.log("Categoria borrada correctamente:");
+    console.warn("Categoria borrada correctamente:");
 } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
 
 }
 
@@ -138,13 +140,79 @@ console.log("-----------------------------Menu----------------------------------
 
 const menu1 = manager.createMenu("Las gambitas");
 const menu2 = manager.createMenu("Los tallarines");
+const menu3 = manager.createMenu("Comida marina");
+const menu4 = manager.createMenu("Tres delicias");
 
 try {
     manager.addMenu(menu1, menu2);
-    console.log("Menus añadidos correctamente");
+    console.warn("Menus añadidos correctamente");
 } catch (error) {
     console.error(error.message);
 }
+
+//Añade un o varios platos al menu
+try {
+    manager.assignDishToMenu(menu1, plato1, plato2);
+    console.warn("Plato/s añadidos al menu correctamente");
+} catch (error) {
+    console.error(error.message);
+}
+
+//Error por añadir un plato que no existe
+try {
+    manager.assignDishToMenu(menu1, plato4);
+    console.warn("Plato/s añadidos al menu correctamente");
+} catch (error) {
+    console.error(error.message);
+}
+
+//Desasignar un plato
+try {
+    manager.deassignDishToMenu(menu1, plato2);
+    console.warn("Plato/s desasignados correctamente del menu");
+} catch (error) {
+    console.error(error.message);
+}
+
+for (let menu of manager.menus) {
+    console.log(menu.toString());
+}
+
+//Borrar un menu
+try {
+    manager.removeMenu(menu1);
+    console.warn("Menu borrado correctamente");
+} catch (error) {
+    console.error(error.message);
+}
+
+for (let menu of manager.menus) {
+    console.log(menu.toString());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // console.log(menu1);
 // showMenus();

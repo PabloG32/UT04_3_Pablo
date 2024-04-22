@@ -44,11 +44,27 @@ class DishExistsException extends ManagerException {
     }
 }
 
-class ManuExistsException extends ManagerException {
+class DishNotExistsException extends ManagerException {
+    constructor(dish, fileName, lineNumber) {
+        super(`Error: The ${dish.name} doesn't exists in the manager.`, fileName, lineNumber);
+        this.dish = dish;
+        this.name = 'DishNotExistsException';
+    }
+}
+
+class MenuExistsException extends ManagerException {
     constructor(menu, fileName, lineNumber) {
         super(`Error: The ${menu.name} already exists in the manager.`, fileName, lineNumber);
         this.menu = menu;
-        this.name = 'ManuExistsException';
+        this.name = 'MenuExistsException';
+    }
+}
+
+class MenuNotExistsException extends ManagerException {
+    constructor(menu, fileName, lineNumber) {
+        super(`Error: The ${menu.name} doesn't exists in the manager.`, fileName, lineNumber);
+        this.menu = menu;
+        this.name = 'MenuNotExistsException';
     }
 }
 
@@ -60,11 +76,27 @@ class AllergenExistsException extends ManagerException {
     }
 }
 
+class AllergenNotExistsException extends ManagerException {
+    constructor(allergen, fileName, lineNumber) {
+        super(`Error: The ${allergen.name} doesn't exists in the manager.`, fileName, lineNumber);
+        this.allergen = allergen;
+        this.name = 'AllergenNotExistsException';
+    }
+}
+
 class RestaurantExistsException extends ManagerException {
     constructor(restaurant, fileName, lineNumber) {
         super(`Error: The ${restaurant.name} already exists in the manager.`, fileName, lineNumber);
         this.restaurant = restaurant;
         this.name = 'RestaurantExistsException';
+    }
+}
+
+class RestaurantNotExistsException extends ManagerException {
+    constructor(restaurant, fileName, lineNumber) {
+        super(`Error: The ${restaurant.name} doesn't exists in the manager.`, fileName, lineNumber);
+        this.restaurant = restaurant;
+        this.name = 'RestaurantNotExistsException';
     }
 }
 
@@ -79,10 +111,28 @@ class DishExistInCategoryException extends ManagerException {
 
 class DishNotExistInCategoryException extends ManagerException {
     constructor(dish, category, fileName, lineNumber) {
-        super(`Error: The ${dish.name} not already exist in ${category.name}.`, fileName, lineNumber);
+        super(`Error: The ${dish.name} doesn't exist in ${category.name}.`, fileName, lineNumber);
         this.category = category;
         this.dish = dish;
-        this.name = 'DishExistInCategoryException';
+        this.name = 'DishNotExistInCategoryException';
+    }
+}
+
+class DishNotExistInMenuException extends ManagerException {
+    constructor(dish, menu, fileName, lineNumber) {
+        super(`Error: The ${dish.name} doesn't exist in ${menu.name}.`, fileName, lineNumber);
+        this.menu = menu;
+        this.dish = dish;
+        this.name = 'DishNotExistInMenuException';
+    }
+}
+
+class DishExistInMenuException extends ManagerException {
+    constructor(dish, menu, fileName, lineNumber) {
+        super(`Error: The ${dish.name} doesn't exist in ${menu.name}.`, fileName, lineNumber);
+        this.menu = menu;
+        this.dish = dish;
+        this.name = 'DishNotExistInMenuException';
     }
 }
 
@@ -91,23 +141,6 @@ class CategoryNotExistException extends ManagerException {
         super(`Error: The ${category.name} doesn't exist in the manager.`, fileName, lineNumber);
         this.category = category;
         this.name = 'CategoryNotExistException';
-    }
-}
-
-class ProductNotExistInManagerException extends ManagerException {
-    constructor(dish, fileName, lineNumber) {
-        super(`Error: The ${dish.name} doesn't exist in the manager.`, fileName, lineNumber);
-        this.dish = dish;
-        this.name = 'ProductNotExistInManagerException';
-    }
-}
-
-class ProductNotExistInCategoryException extends ManagerException {
-    constructor(dish, category, fileName, lineNumber) {
-        super(`Error: The ${dish.name} doesn't exist in ${category.name}.`, fileName, lineNumber);
-        this.category = category;
-        this.dish = dish;
-        this.name = 'ProductNotExistInCategoryException';
     }
 }
 
@@ -282,12 +315,14 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 return this;
             }
 
+            //Devuelve un objeto Category si está registrado, o crea un nuevo.
             createCategory(name, description = "") {
                 let position = this.#getCategoryPosition(name);
                 if (position != -1) return this.#categories[position];
                 return new Category(name, description);
             }
 
+            //Asigna un plato a una categoría. Si el objeto Category o Dish no existen se añaden al sistema.
             assignCategoryToDish(category, ...dishes) {
                 if (!(category instanceof Category)) {
                     throw new ObjecManagerException('category', 'Category');
@@ -318,11 +353,11 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     }
 
                     this.#categories[positionCat].dishes.push(this.#dishes[positionDish]);
-                    // console.log(this.#categories[positionCat]);
                 }
 
             }
 
+            //Desasigna un plato de una categoría
             deassignCategoryToDish(category, ...dishes) {
                 if (!(category instanceof Category)) {
                     throw new ObjecManagerException('category', 'Category');
@@ -352,10 +387,10 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     }
 
                     this.#categories[positionCat].dishes.splice(dishIndex, 1);
-                    // console.log(this.#categories[positionCat]);
                 }
             }
 
+            //Elimina una categoría. Los platos quedarán desasignados de la categoría.
             removeCategory(category) {
                 if (!(category instanceof Category)) {
                     throw new ObjecManagerException('category', 'Category');
@@ -376,8 +411,6 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 }
             }
 
-
-
             //Añade un nuevo menú.
             addMenu(...menus) {
                 for (let menu of menus) {
@@ -393,7 +426,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                             }
                         );
                     } else {
-                        throw new ManuExistsException(menu);
+                        throw new MenuExistsException(menu);
                     }
                 }
                 return this;
@@ -406,6 +439,88 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 return new Menu(name, description);
             }
 
+            //Asigna un plato a un menú. Si algún argumento no existe se añade al sistema.
+            assignDishToMenu(menu, ...dishes) {
+                if (!(menu instanceof Menu)) {
+                    throw new ObjecManagerException('menu', 'Menu');
+                }
+
+                for (let dish of dishes) {
+                    if (!(dish instanceof Dish)) {
+                        // Si el plato no existe, se añade al sistema
+                        this.addDish(dish);
+                    }
+                }
+
+                let positionMenu = this.#getMenuPosition(menu.name);
+                if (positionMenu === -1) {
+                    // Si el menú no existe, se añade al sistema
+                    this.addMenu(menu);
+                    positionMenu = this.#getMenuPosition(menu.name);
+                }
+
+                for (let dish of dishes) {
+                    let positionDish = this.#getDishPosition(dish.name);
+                    if (positionDish === -1) {
+                        throw new DishNotExistsException(dish);
+                    }
+
+                    // Verificar si el plato ya existe en el menú
+                    if (this.#menus[positionMenu].dishes.includes(this.#dishes[positionDish])) {
+                        throw new DishExistInMenuException(dish, menu);
+                    }
+
+                    this.#menus[positionMenu].dishes.push(this.#dishes[positionDish]);
+                }
+            }
+
+            //Desasigna un plato de un menú.
+            deassignDishToMenu(menu, ...dishes) {
+                if (!(menu instanceof Menu)) {
+                    throw new ObjecManagerException('menu', 'Menu');
+                }
+
+                for (let dish of dishes) {
+                    if (!(dish instanceof Dish)) {
+                        throw new ObjecManagerException('dish', 'Dish');
+                    }
+                }
+
+                let positionMenu = this.#getMenuPosition(menu.name);
+                if (positionMenu === -1) {
+                    throw new MenuNotExistsException(menu);
+                }
+
+                for (let dish of dishes) {
+                    let positionDish = this.#getDishPosition(dish.name);
+                    if (positionDish === -1) {
+                        throw new DishNotExistsException(dish);
+                    }
+
+                    let dishIndex = this.#menus[positionMenu].dishes.indexOf(this.#dishes[positionDish]);
+                    if (dishIndex === -1) {
+                        throw new DishNotExistInMenuException(dish, menu);
+                    }
+
+                    this.#menus[positionMenu].dishes.splice(dishIndex, 1);
+                }
+            }
+
+            //Elimina un menú.
+            removeMenu(...menus) {
+                for (let menu of menus) {
+                    if (!(menu instanceof Menu)) {
+                        throw new ObjecManagerException('menu', 'Menu');
+                    }
+                    let position = this.#getMenuPosition(menu.name);
+                    if (position !== -1) {
+                        this.#menus.splice(position, 1);
+                    } else {
+                        throw new MenuExistsException(menu);
+                    }
+                }
+                return this;
+            }
 
 
         }
