@@ -76,11 +76,11 @@ class AllergenExistsException extends ManagerException {
     }
 }
 
-class AllergenNotExistsException extends ManagerException {
+class AllergenNotExistException extends ManagerException {
     constructor(allergen, fileName, lineNumber) {
         super(`Error: The ${allergen.name} doesn't exists in the manager.`, fileName, lineNumber);
         this.allergen = allergen;
-        this.name = 'AllergenNotExistsException';
+        this.name = 'AllergenNotExistException';
     }
 }
 
@@ -109,12 +109,30 @@ class DishExistInCategoryException extends ManagerException {
     }
 }
 
+class AllergenExistInDishException extends ManagerException {
+    constructor(allergen, dish, fileName, lineNumber) {
+        super(`Error: The ${allergen.name} already exist in ${dish.name}.`, fileName, lineNumber);
+        this.allergen = allergen;
+        this.dish = dish;
+        this.name = 'AllergenExistInDishException';
+    }
+}
+
 class DishNotExistInCategoryException extends ManagerException {
     constructor(dish, category, fileName, lineNumber) {
         super(`Error: The ${dish.name} doesn't exist in ${category.name}.`, fileName, lineNumber);
         this.category = category;
         this.dish = dish;
         this.name = 'DishNotExistInCategoryException';
+    }
+}
+
+class AllergenNotExistInDishException extends ManagerException {
+    constructor(dish, allergen, fileName, lineNumber) {
+        super(`Error: The ${allergen.name} doesn't exist in ${dish.name}.`, fileName, lineNumber);
+        this.allergen = allergen;
+        this.dish = dish;
+        this.name = 'AllergenNotExistInDishException';
     }
 }
 
@@ -201,6 +219,33 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     },
                 });
 
+                Object.defineProperty(this, 'allergenes', {
+                    enumerable: true,
+                    get() {
+                        const array = this.#allergenes;
+                        return {
+                            *[Symbol.iterator]() {
+                                for (const arrayAllergen of array) {
+                                    yield arrayAllergen.allergen;
+                                }
+                            },
+                        };
+                    },
+                });
+
+                Object.defineProperty(this, 'restaurants', {
+                    enumerable: true,
+                    get() {
+                        const array = this.#restaurants;
+                        return {
+                            *[Symbol.iterator]() {
+                                for (const restaurant of array) {
+                                    yield restaurant;
+                                }
+                            },
+                        };
+                    },
+                });
             }
 
             //Dado un plato, devuelve su posición
@@ -225,15 +270,10 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
             //Dado un allergeno, devuelve su posición 
             //Comparamos por contenido no por referencia.
-            #getAllergenPosition(allergen) {
-                if (!(allergen instanceof Allergen)) {
-                    throw new ObjecManagerException('allergen', 'Allergen');
-                }
-
+            #getAllergenPosition(name) {
                 function compareElements(element) {
-                    return (element.allergen.name === allergen.name)
+                    return (element.allergen.name === name)
                 }
-
                 return this.#allergenes.findIndex(compareElements);
             }
 
@@ -249,16 +289,86 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
             //Dado un restaurante, devuelve su posicion
             //Comparamos por contenido no por referencia.
-            #getRestaurantPosition(restaurant) {
-                if (!(restaurant instanceof Restaurant)) {
-                    throw new ObjecManagerException('restaurant', 'Restaurant');
-                }
-
+            #getRestaurantPosition(name) {
                 function compareElements(element) {
-                    return (element.restaurant.name === restaurant.name);
+                    return (element.name === name);
+                }
+                return this.#restaurants.findIndex(compareElements);
+            }
+
+            //Obtiene un iterador con la relación de los platos a una categoría. El iterador puede estar ordenado.
+            *getDishesInCategory(category, ordered) {
+                if (!(category instanceof Category)) {
+                    throw new ObjecManagerException('category', 'Category');
                 }
 
-                return this.#restaurants.findIndex(compareElements);
+                let positionCat = this.#getCategoryPosition(category.name);
+                if (positionCat === -1) {
+                    throw new CategoryNotExistException(category);
+                }
+                let dishes;
+                if (ordered) {
+                    dishes = [...this.#categories[positionCat].dishes];
+                    dishes.sort(ordered);
+                } else {
+                    dishes = this.#categories[positionCat].dishes;
+                }
+
+                for (let dish of dishes) {
+                    yield dish;
+                }
+
+            }
+
+            // Obtiene un iterador con los platos que tienen un determinado alérgeno.
+            // El iterador puede estar ordenado.
+            *getDishesWithAllergen(allergen, ordered) {
+                if (!(allergen instanceof Allergen)) {
+                    throw new ObjecManagerException('allergen', 'Allergen');
+                }
+
+                let positionAllergen = this.#getAllergenPosition(allergen.name);
+                if (positionAllergen === -1) {
+                    throw new AllergenNotExistException(allergen);
+                }
+
+                let dishes = [];
+                for (let dish of this.#dishes) {
+                    if (dish.allergenes.includes(this.#allergenes[positionAllergen])) {
+                        dishes.push(dish);
+                    }
+                }
+
+                if (ordered) {
+                    dishes.sort(ordered);
+                }
+
+                return {
+                    [Symbol.iterator]: function* () {
+                        for (let dish of dishes) {
+                            yield dish;
+                        }
+                    }
+                };
+            }
+
+
+            //Obtiene un iterador que cumpla un criterio concreto en base a una función de callback. El iterador puede estar ordenado.
+            *findDishes(filter, ordered) {
+                let dishes;
+                if (ordered) {
+                    dishes = [...this.#dishes];
+                    dishes.sort(ordered);
+                } else {
+                    dishes = this.#dishes;
+                }
+
+                for (let dish of dishes) {
+                    if (filter(dish)) {
+                        yield dish
+                    }
+
+                }
             }
 
             // Definición del atributo systemName
@@ -270,6 +380,9 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 if (systemName === 'undefined' || systemName === '') throw new EmptyValueException("systemName");
                 this.#systemName = systemName;
             }
+
+
+            //*****************************************************************DISH***********************************************************************************
 
             //Añade un nuevo plato
             addDish(...dishes) {
@@ -293,6 +406,9 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 if (position != -1) return this.#dishes[position];
                 return new Dish(name, description, ingredients, image);
             }
+
+
+            //**************************************************CATEGORY*********************************************************************************************************
 
             //Añade una nueva categoria
             addCategory(...categories) {
@@ -334,17 +450,17 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     }
                 }
 
+                let positionCat = this.#getCategoryPosition(category.name);
+                if (positionCat === -1) {
+                    this.addCategory(category);
+                    positionCat = this.#getCategoryPosition(category.name);
+                }
+
                 for (let dish of dishes) {
                     let positionDish = this.#getDishPosition(dish.name);
                     if (positionDish === -1) {
                         this.addDish(dish);
                         positionDish = this.#getCategoryPosition(dish.name);
-                    }
-
-                    let positionCat = this.#getCategoryPosition(category.name);
-                    if (positionCat === -1) {
-                        this.addCategory(category);
-                        positionCat = this.#getCategoryPosition(category.name);
                     }
 
                     // Verificar si el plato ya existe en la categoría
@@ -354,7 +470,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
                     this.#categories[positionCat].dishes.push(this.#dishes[positionDish]);
                 }
-
+                return this;
             }
 
             //Desasigna un plato de una categoría
@@ -388,6 +504,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
                     this.#categories[positionCat].dishes.splice(dishIndex, 1);
                 }
+                return this;
             }
 
             //Elimina una categoría. Los platos quedarán desasignados de la categoría.
@@ -410,6 +527,10 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     throw new CategoryNotExistException(category);
                 }
             }
+
+
+            //***************************************************MENU****************************************************************************************************
+
 
             //Añade un nuevo menú.
             addMenu(...menus) {
@@ -447,8 +568,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
 
                 for (let dish of dishes) {
                     if (!(dish instanceof Dish)) {
-                        // Si el plato no existe, se añade al sistema
-                        this.addDish(dish);
+                        throw new ObjecManagerException('dish', 'Dish');
                     }
                 }
 
@@ -462,7 +582,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 for (let dish of dishes) {
                     let positionDish = this.#getDishPosition(dish.name);
                     if (positionDish === -1) {
-                        throw new DishNotExistsException(dish);
+                        this.addDish(dish);
                     }
 
                     // Verificar si el plato ya existe en el menú
@@ -521,6 +641,189 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 }
                 return this;
             }
+
+            // Añade el método changeDishesPositionsInMenu a la clase RestaurantsManager
+            changeDishesPositionsInMenu(menu, dish1, dish2) {
+                let positionMenu = this.#getMenuPosition(menu.name);
+                if (positionMenu === -1) {
+                    throw new MenuNotExistsException(menu);
+                }
+                // Verificar que ambos platos no sean nulos y estén registrados
+                if (!dish1 || !this.#dishes.find(d => d === dish1) || !dish2 || !this.#dishes.find(d => d === dish2)) {
+                    throw new DishNotExistsException(!dish1 ? dish1 : dish2);
+                }
+
+                // Obtener el menú y las posiciones de los platos
+                const menuIndex = this.#getMenuPosition(menu.name);
+                const dish1Index = this.#getDishPosition(dish1.name);
+                const dish2Index = this.#getDishPosition(dish2.name);
+
+                // Intercambiar las posiciones de los platos en el menú
+                const temp = this.#menus[menuIndex].dishes[dish1Index];
+                this.#menus[menuIndex].dishes[dish1Index] = this.#menus[menuIndex].dishes[dish2Index];
+                this.#menus[menuIndex].dishes[dish2Index] = temp;
+
+                return this;
+            }
+
+
+
+
+            //********************************************************************ALERGENOS****************************************************************************************
+
+            //Añade un nuevo alérgeno.
+            addAllergen(...allergens) {
+                for (let allergen of allergens) {
+                    if (!(allergen instanceof Allergen)) {
+                        throw new ObjecManagerException('allergen', 'Allergen');
+                    }
+                    let position = this.#getAllergenPosition(allergen.name);
+                    if (position === -1) {
+                        this.#allergenes.push(
+                            {
+                                allergen: allergen,
+                                dishes: []
+                            }
+                        );
+                    } else {
+                        throw new AllergenExistsException(allergen);
+                    }
+                }
+                return this;
+            }
+
+
+
+            //Devuelve un objeto Allergen si está registrado, o crea un nuevo.
+            createAllergen(name, description = "") {
+                let position = this.#getAllergenPosition(name);
+                if (position != -1) return this.#allergenes[position];
+                return new Allergen(name, description);
+            }
+
+            assignAllergenToDish(dish, ...allergens) {
+                if (!(dish instanceof Dish)) {
+                    throw new ObjecManagerException('dish', 'Dish');
+                }
+
+                for (let allergen of allergens) {
+                    if (!(allergen instanceof Allergen)) {
+                        throw new ObjecManagerException('allergen', 'Allergen');
+                    }
+                }
+
+                let positionDish = this.#getDishPosition(dish.name);
+                if (positionDish === -1) {
+                    this.addDish(dish);
+                    positionDish = this.#getDishPosition(dish.name);
+                }
+
+                for (let allergen of allergens) {
+                    let positionAllergen = this.#getAllergenPosition(allergen.name);
+                    if (positionAllergen === -1) {
+                        this.addAllergen(allergen);
+                        positionAllergen = this.#getAllergenPosition(allergen.name);
+                    }
+
+                    // Verificar si el alérgeno ya existe en el plato
+                    if (this.#dishes[positionDish].allergenes.includes(this.#allergenes[positionAllergen])) {
+                        throw new AllergenExistInDishException(allergen);
+                    }
+
+                    this.#dishes[positionDish].allergenes.push(this.#allergenes[positionAllergen]);
+                }
+
+                return this;
+            }
+
+
+
+
+
+            //Desasigna un alérgeno.
+            deassignAllergenToDish(dish, ...allergenes) {
+                if (!(dish instanceof Dish)) {
+                    throw new ObjecManagerException('dish', 'Dish');
+                }
+
+                for (let allergen of allergenes) {
+                    if (!(allergen instanceof Allergen)) {
+                        throw new ObjecManagerException('allergen', 'Allergen');
+                    }
+                }
+
+                let positionDish = this.#getDishPosition(dish.name);
+                if (positionDish === -1) {
+                    throw new DishNotExistsException(dish);
+                }
+
+                for (let allergen of allergenes) {
+                    let positionAllergen = this.#getCategoryPosition(allergen.name);
+                    if (positionAllergen === -1) {
+                        throw new AllergenNotExistException(allergen);
+                    }
+
+                    // Verificar si el allergeno existe en el plato
+                    let dishIndex = this.#dishes[positionDish].allergenes.findIndex(item => item === this.#allergenes[positionAllergen]);
+                    if (dishIndex === -1) {
+                        throw new AllergenNotExistInDishException(dish, allergen);
+                    }
+
+                    this.#dishes[positionDish].allergenes.splice(dishIndex, 1);
+                }
+                return this;
+            }
+
+
+
+            //*****************************************************RESTAURANT**********************************************************************************************
+
+
+            //Añade un nuevo restaurante.
+            addRestaurant(...restaurants) {
+                for (let restaurant of restaurants) {
+                    if (!(restaurant instanceof Restaurant)) {
+                        throw new ObjecManagerException('restaurant', 'Restaurant');
+                    }
+                    let position = this.#getRestaurantPosition(restaurant.name);
+                    if (position === -1) {
+                        this.#restaurants.push(restaurant);
+                    } else {
+                        throw new RestaurantExistsException(restaurant);
+                    }
+                }
+                return this;
+            }
+
+            //Devuelve un objeto Restaurant si está registrado, o crea un nuevo.
+            createRestaurant(name, description = "", location = "") {
+                let position = this.#getRestaurantPosition(name);
+                if (position != -1) return this.#restaurants[position];
+                return new Restaurant(name, description, location);
+            }
+
+            //Elimina un restaurante.
+            removeRestaurant(...restaurants) {
+                for (let restaurant of restaurants) {
+                    if (!(restaurant instanceof Restaurant)) {
+                        throw new ObjecManagerException('restaurant', 'Restaurant');
+                    }
+                    let position = this.#getRestaurantPosition(restaurant.name);
+                    if (position !== -1) {
+                        this.#restaurants.splice(position, 1);
+                    } else {
+                        throw new RestaurantNotExistsException(restaurant);
+                    }
+                }
+                return this;
+            }
+
+
+
+
+
+
+
 
 
         }

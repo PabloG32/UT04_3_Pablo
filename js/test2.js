@@ -5,41 +5,6 @@ const manager = RestaurantsManager.getInstance();
 
 //Funciones
 
-function showDish() { //Recorremos los platos.
-    console.log("Recorremos los platos:");
-    for (let dish of manager.dishes) {
-        console.log("   -Dish: " + dish.name);
-    }
-}
-
-function showCategory() { //Recorremos las categorias.
-    console.log("Recorremos las categorias:");
-    for (let cat of manager.categories) {
-        console.log("   -Category: " + cat.name);
-    }
-}
-
-function showMenus() { //Recorremos los menus.
-    console.log("Recorremos los menus:");
-    for (let m of manager.menus) {
-        console.log("   -Menu: " + m.name);
-    }
-}
-
-function showAllergenos() { //Recorremos los alergenos.
-    console.log("Recorremos los alergenos:");
-    for (let allergen of manager.allergenes) {
-        console.log("   -Alergenos: " + allergen.name);
-    }
-}
-
-function showRestaurant() { //Recorremos los menus.
-    console.log("Recorremos los restaurantes:");
-    for (let restaurant of manager.restaurants) {
-        console.log("   -Restaurant: " + restaurant.name);
-    }
-}
-
 
 console.log("------------------------------Dish--------------------------------------------------");
 
@@ -51,87 +16,124 @@ const plato4 = manager.createDish("Plato 4");
 const plato5 = manager.createDish("Plato 5");
 
 try {
-    manager.addDish(plato1, plato2, plato3);
+    manager.addDish(plato1, plato2, plato3, plato4);
     console.warn("Platos añadidos correctamente");
 } catch (error) {
     console.error(error.message);
 }
 
-// // Intentar añadir el mismo plato nuevamente debería lanzar un error
-try {
-    manager.addDish(manager.createDish("Plato 1"));
-} catch (error) {
-    console.error(error.message);
-}
+// // // Intentar añadir el mismo plato nuevamente debería lanzar un error
+// try {
+//     manager.addDish(manager.createDish("Plato 1"));
+// } catch (error) {
+//     console.error(error.message);
+// }
 
 
-for (let dish of manager.dishes) {
-    console.log(dish.toString());
-}
+// for (let dish of manager.dishes) {
+//     console.log(dish.toString());
+// }
 
-// showDish();
+// console.log("------------------------------Categoria--------------------------------------------------");
 
-console.log("------------------------------Categoria--------------------------------------------------");
-//Añadir cat
+// const cat1 = manager.createCategory("Carne");
+// const cat2 = manager.createCategory("Pescado");
+// const cat3 = manager.createCategory("Verde");
+// const cat4 = manager.createCategory("Pollo");
 
-const cat1 = manager.createCategory("Carne");
-const cat2 = manager.createCategory("Pescado");
-const cat3 = manager.createCategory("Verde");
-const cat4 = manager.createCategory("Pollo");
+// try {
+//     manager.addCategory(cat1, cat2, cat3);
+//     console.warn("Categorias añadidas correctamente");
+// } catch (error) {
+//     console.error(error.message);
+// }
 
-try {
-    manager.addCategory(cat1, cat2, cat3);
-    console.warn("Categorias añadidas correctamente");
-} catch (error) {
-    console.error(error.message);
-}
+// // // Intentar añadir la misma cat nuevamente debería lanzar un error
+// try {
+//     manager.addCategory(cat1);
+// } catch (error) {
+//     console.error(error.message);
+// }
 
-// // Intentar añadir la misma cat nuevamente debería lanzar un error
-try {
-    manager.addCategory(cat1);
-} catch (error) {
-    console.error(error.message);
-}
+// for (let category of manager.categories) {
+//     console.log(category.toString());
+// }
 
-for (let category of manager.categories) {
-    console.log(category.toString());
-}
+// //Asignar categorias a platos
+// try {
+//     manager.assignCategoryToDish(cat1, plato2, plato1);
+//     manager.assignCategoryToDish(cat1, plato3, plato4);
+//     console.warn("Asignado correctamente");
+// } catch (error) {
+//     console.error(error.message);
 
-try {
-    manager.assignCategoryToDish(cat1, plato1, plato2);
-    // manager.assignCategoryToDish(cat1, plato2);
-    console.warn("Asignado correctamente");
-} catch (error) {
-    console.error(error.message);
+// }
 
-}
+// //Error por que ese plato ya esta en esa categoria
+// try {
+//     manager.assignCategoryToDish(cat1, plato1);
+//     console.warn("Asignado correctamente:");
+// } catch (error) {
+//     console.error(error.message);
 
-//Error por que ese plato ya esta en esa categoria
-try {
-    manager.assignCategoryToDish(cat1, plato1);
-    console.warn("Asignado correctamente:");
-} catch (error) {
-    console.error(error.message);
+// }
 
-}
+// //Uso del getDishInCategory
+// try {
+//     let dishcat4 = manager.getDishesInCategory(cat1, (elemA, elemB) => {
+//         let order = elemA.name < elemB.name ? -1 : 1;
+//         return order;
+//     });
+//     console.warn("Platos de la categoria 1:")
+//     for (const dish of dishcat4) {
+//         console.log(dish.toString())
+//     }
+// } catch (error) {
+//     console.error(error.message);
+// }
 
-//Error por intentar desasignar un plato que no existe
-try {
-    manager.deassignCategoryToDish(cat1, plato3);
-    console.warn("Desasignado correctamente:");
-} catch (error) {
-    console.error(error.message);
+// //Uso del findDish
+// try {
+//     let foundDishes = manager.findDishes((dish) => dish.name === 'Plato 3' || dish.name === 'Plato 2');
+//     console.warn("Busando platos 2 y 3:")
+//     for (const dish of foundDishes) {
+//         console.log(dish.toString())
+//     }
+// } catch (error) {
+//     console.error(error.message);
+// }
 
-}
 
-//Borrar una categoria
-try {
-    manager.removeCategory(cat4);
-    console.warn("Categoria borrada correctamente:");
-} catch (error) {
-    console.error(error.message);
+// //Error por intentar desasignar un plato que no existe
+// try {
+//     manager.deassignCategoryToDish(cat1, plato5);
+//     console.warn("Desasignado correctamente:");
+// } catch (error) {
+//     console.error(error.message);
 
-}
+// }
+
+// //Borrar una categoria
+// try {
+//     manager.removeCategory(cat4);
+//     console.warn("Categoria borrada correctamente:");
+// } catch (error) {
+//     console.error(error.message);
+
+// }
+
+// try {
+//     let dishcat4 = manager.getDishesInCategory(cat1, (elemA, elemB) => {
+//         let order = elemA.name < elemB.name ? -1 : 1;
+//         return order;
+//     });
+//     console.log("Platos de la cat1:")
+//     for (const dish of dishcat4) {
+//         console.log(dish.toString())
+//     }
+// } catch (error) {
+//     console.error(error.message);
+// }
 
 
 
@@ -144,121 +146,134 @@ const menu3 = manager.createMenu("Comida marina");
 const menu4 = manager.createMenu("Tres delicias");
 
 try {
-    manager.addMenu(menu1, menu2);
+    manager.addMenu(menu1, menu2, menu3);
     console.warn("Menus añadidos correctamente");
 } catch (error) {
     console.error(error.message);
 }
 
-//Añade un o varios platos al menu
+// // //Añade un o varios platos al menu
+// try {
+//     manager.assignDishToMenu(menu1, plato1, plato2, plato3);
+//     console.warn("Plato/s añadidos al menu correctamente");
+// } catch (error) {
+//     console.error(error.message);
+// }
+
+// console.log(manager);
+
+// try {
+//     manager.changeDishesPositionsInMenu(menu1, plato1, plato3);
+//     console.warn("Posiciones cambiadas correctamente");
+// } catch (error) {
+//     console.error(error.message);
+// }
+
+// console.log(manager);
+
+// //Error por añadir un plato que no existe
+// try {
+//     manager.assignDishToMenu(menu1, plato4);
+//     console.warn("Plato/s añadidos al menu correctamente");
+// } catch (error) {
+//     console.error(error.message);
+// }
+
+// //Desasignar un plato
+// try {
+//     manager.deassignDishToMenu(menu1, plato2);
+//     console.warn("Plato/s desasignados correctamente del menu");
+// } catch (error) {
+//     console.error(error.message);
+// }
+
+// for (let menu of manager.menus) {
+//     console.log(menu.toString());
+// }
+
+// //Borrar un menu
+// try {
+//     manager.removeMenu(menu1);
+//     console.warn("Menu borrado correctamente");
+// } catch (error) {
+//     console.error(error.message);
+// }
+
+// for (let menu of manager.menus) {
+//     console.log(menu.toString());
+// }
+
+
+
+
+console.log("------------------------------Allergen--------------------------------------------------");
+
+const aler1 = manager.createAllergen("Huevo");
+const aler2 = manager.createAllergen("Frutos secos");
+const aler3 = manager.createAllergen("Lacteos");
+const aler4 = "";
+
 try {
-    manager.assignDishToMenu(menu1, plato1, plato2);
-    console.warn("Plato/s añadidos al menu correctamente");
+    manager.addAllergen(aler1, aler2, aler3);
+    console.warn("Alergeno añadido correctamnete");
 } catch (error) {
     console.error(error.message);
 }
 
-//Error por añadir un plato que no existe
+// //Mostrar los alergenos
+// for (let allergen of manager.allergenes) {
+//     console.log(allergen.toString());
+// }
+
+// //Error por que ese alergeno ya existe
+// try {
+//     manager.addAllergen(aler2);
+//     console.warn("Alergeno añadido correctamnete");
+// } catch (error) {
+//     console.error(error.message);
+// }
+
+
+
+// //Asignar alergenos a un plato
 try {
-    manager.assignDishToMenu(menu1, plato4);
-    console.warn("Plato/s añadidos al menu correctamente");
+    manager.assignAllergenToDish(plato1, aler1);
+    console.warn("Alergenos asiganados correctamente");
 } catch (error) {
     console.error(error.message);
 }
 
-//Desasignar un plato
-try {
-    manager.deassignDishToMenu(menu1, plato2);
-    console.warn("Plato/s desasignados correctamente del menu");
-} catch (error) {
-    console.error(error.message);
-}
 
-for (let menu of manager.menus) {
-    console.log(menu.toString());
-}
+// //Asignar alergenos a un plato
+// // try {
+// //     manager.deassignAllergenToDish(plato1, aler3);
+// //     console.warn("Desasignado correctamente");
+// // } catch (error) {
+// //     console.error(error.message);
+// // }
 
-//Borrar un menu
-try {
-    manager.removeMenu(menu1);
-    console.warn("Menu borrado correctamente");
-} catch (error) {
-    console.error(error.message);
-}
-
-for (let menu of manager.menus) {
-    console.log(menu.toString());
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// console.log(menu1);
-// showMenus();
-
+// console.log("------------------------------Restaurants--------------------------------------------------");
+// const restaurant1 = manager.createRestaurant("La casona");
+// const restaurant2 = manager.createRestaurant("La Fresita");
 
 // try {
-//     manager.removeMenu(menu2);
-//     console.log("Menu borrado correctamente");
+//     manager.addRestaurant(restaurant1, restaurant2);
+//     console.warn("Restaurantes añadidos correctamente");
 // } catch (error) {
 //     console.error(error.message);
 // }
-// showMenus();
 
-
-// console.log("------------------------------Allergen--------------------------------------------------");
-
-// const allergen1 = new Allergen("lacteos");
-// const allergen2 = new Allergen("cacahuete");
+// for (let restaurant of manager.restaurants) {
+//     console.log(restaurant.toString());
+// }
 
 // try {
-//     manager.addAllergen(allergen1, allergen2);
-//     console.log("Alergenos añadidos correctamente");
+//     manager.removeRestaurant(restaurant2);
+//     console.warn("Restaurantes borrado correctamente");
 // } catch (error) {
 //     console.error(error.message);
 // }
-// showAllergenos();
 
-// //Borrar alergeno
-// try {
-//     manager.removeAllergen(allergen1);
-//     console.log("Alergeno borrado correctamente");
-// } catch (error) {
-//     console.error(error.message);
+// for (let restaurant of manager.restaurants) {
+//     console.log(restaurant.toString());
 // }
-// showAllergenos()
-
-
-// console.log("------------------------------Restaurant--------------------------------------------------");
-
-// const rest1 = new Restaurant("La casa");
-// const rest2 = new Restaurant("portalon");
-
-// try {
-//     manager.addRestaurant(rest1, rest2);
-//     console.log("Restaurantes añadidos correctamente");
-// } catch (error) {
-//     console.error(error.message);
-// }
-// showRestaurant();
