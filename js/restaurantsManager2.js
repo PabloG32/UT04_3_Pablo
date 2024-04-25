@@ -407,6 +407,40 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 return new Dish(name, description, ingredients, image);
             }
 
+            //Elimina un plato y todas sus asignaciones a categorías, alérgenos y menús.
+            removeDish(dish) {
+                if (!(dish instanceof Dish)) {
+                    throw new ObjecManagerException('dish', 'Dish');
+                }
+
+                let positionDish = this.#getDishPosition(dish.name);
+                if (positionDish !== -1) {
+                    // Desasignar el plato de todas las categorías
+                    for (let category of this.#categories) {
+                        if (category.dishes.includes(this.#dishes[positionDish])) {
+                            this.deassignCategoryToDish(category.category, dish);
+                        }
+                    }
+                    // Desasignar el plato de todos los alérgenos
+                    for (let allergen of this.#allergenes) {
+                        if (allergen.dishes.includes(this.#dishes[positionDish])) {
+                            this.deassignAllergenToDish(dish, allergen.allergen);
+                        }
+                    }
+                    // Desasignar el plato de todos los menús
+                    for (let menu of this.#menus) {
+                        if (menu.dishes.includes(this.#dishes[positionDish])) {
+                            this.deassignDishToMenu(menu.menu, dish);
+                        }
+                    }
+                    // Eliminar el plato
+                    this.#dishes.splice(positionDish, 1);
+                    return this;
+                } else {
+                    throw new DishNotExistException(dish);
+                }
+            }
+
 
             //**************************************************CATEGORY*********************************************************************************************************
 
@@ -692,8 +726,6 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 return this;
             }
 
-
-
             //Devuelve un objeto Allergen si está registrado, o crea un nuevo.
             createAllergen(name, description = "") {
                 let position = this.#getAllergenPosition(name);
@@ -726,27 +758,23 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     }
 
                     // Verificar si el alérgeno ya existe en el plato
-                    if (this.#dishes[positionDish].allergenes.includes(this.#allergenes[positionAllergen])) {
+                    if (this.#allergenes[positionAllergen].dishes.includes(this.#dishes[positionDish])) {
                         throw new AllergenExistInDishException(allergen);
                     }
 
-                    this.#dishes[positionDish].allergenes.push(this.#allergenes[positionAllergen]);
+                    this.#allergenes[positionAllergen].dishes.push(this.#dishes[positionDish]);
                 }
 
                 return this;
             }
 
-
-
-
-
-            //Desasigna un alérgeno.
-            deassignAllergenToDish(dish, ...allergenes) {
+            //Desasigna uno o varios alérgeno.
+            deassignAllergenToDish(dish, ...allergens) {
                 if (!(dish instanceof Dish)) {
                     throw new ObjecManagerException('dish', 'Dish');
                 }
 
-                for (let allergen of allergenes) {
+                for (let allergen of allergens) {
                     if (!(allergen instanceof Allergen)) {
                         throw new ObjecManagerException('allergen', 'Allergen');
                     }
@@ -757,23 +785,45 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     throw new DishNotExistsException(dish);
                 }
 
-                for (let allergen of allergenes) {
-                    let positionAllergen = this.#getCategoryPosition(allergen.name);
+                for (let allergen of allergens) {
+                    let positionAllergen = this.#getAllergenPosition(allergen.name);
+
                     if (positionAllergen === -1) {
                         throw new AllergenNotExistException(allergen);
                     }
 
-                    // Verificar si el allergeno existe en el plato
-                    let dishIndex = this.#dishes[positionDish].allergenes.findIndex(item => item === this.#allergenes[positionAllergen]);
-                    if (dishIndex === -1) {
-                        throw new AllergenNotExistInDishException(dish, allergen);
+                    // Verificar si el alérgeno existe en el plato
+                    let allergenIndex = this.#allergenes[positionAllergen].dishes.findIndex(item => item === this.#dishes[positionDish]);
+                    if (allergenIndex === -1) {
+                        throw new AllergenNotExistInDishException(allergen, dish);
                     }
 
-                    this.#dishes[positionDish].allergenes.splice(dishIndex, 1);
+                    this.#allergenes[positionAllergen].dishes.splice(allergenIndex, 1);
                 }
+
                 return this;
             }
 
+            // Elimina un alérgeno.
+            removeAllergen(allergen) {
+                if (!(allergen instanceof Allergen)) {
+                    throw new ObjecManagerException('allergen', 'Allergen');
+                }
+
+                let position = this.#getAllergenPosition(allergen.name);
+                if (position !== -1) {
+                    // Desasignar el alérgeno de todos los platos
+                    let allergenDishes = this.#allergenes[position].dishes;
+                    for (let dish of allergenDishes) {
+                        this.deassignAllergenToDish(dish, allergen);
+                    }
+                    // Eliminar el alérgeno
+                    this.#allergenes.splice(position, 1);
+                    return this;
+                } else {
+                    throw new AllergenNotExistException(allergen);
+                }
+            }
 
 
             //*****************************************************RESTAURANT**********************************************************************************************

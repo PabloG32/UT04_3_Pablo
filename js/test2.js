@@ -34,19 +34,21 @@ try {
 //     console.log(dish.toString());
 // }
 
-// console.log("------------------------------Categoria--------------------------------------------------");
 
-// const cat1 = manager.createCategory("Carne");
-// const cat2 = manager.createCategory("Pescado");
-// const cat3 = manager.createCategory("Verde");
-// const cat4 = manager.createCategory("Pollo");
 
-// try {
-//     manager.addCategory(cat1, cat2, cat3);
-//     console.warn("Categorias añadidas correctamente");
-// } catch (error) {
-//     console.error(error.message);
-// }
+console.log("------------------------------Categoria--------------------------------------------------");
+
+const cat1 = manager.createCategory("Carne");
+const cat2 = manager.createCategory("Pescado");
+const cat3 = manager.createCategory("Verde");
+const cat4 = manager.createCategory("Pollo");
+
+try {
+    manager.addCategory(cat1, cat2, cat3);
+    console.warn("Categorias añadidas correctamente");
+} catch (error) {
+    console.error(error.message);
+}
 
 // // // Intentar añadir la misma cat nuevamente debería lanzar un error
 // try {
@@ -60,14 +62,14 @@ try {
 // }
 
 // //Asignar categorias a platos
-// try {
-//     manager.assignCategoryToDish(cat1, plato2, plato1);
-//     manager.assignCategoryToDish(cat1, plato3, plato4);
-//     console.warn("Asignado correctamente");
-// } catch (error) {
-//     console.error(error.message);
+try {
+    manager.assignCategoryToDish(cat1, plato2, plato1);
+    manager.assignCategoryToDish(cat1, plato3, plato4);
+    console.warn("Asignado correctamente");
+} catch (error) {
+    console.error(error.message);
 
-// }
+}
 
 // //Error por que ese plato ya esta en esa categoria
 // try {
@@ -153,12 +155,12 @@ try {
 }
 
 // // //Añade un o varios platos al menu
-// try {
-//     manager.assignDishToMenu(menu1, plato1, plato2, plato3);
-//     console.warn("Plato/s añadidos al menu correctamente");
-// } catch (error) {
-//     console.error(error.message);
-// }
+try {
+    manager.assignDishToMenu(menu1, plato1, plato2, plato3);
+    console.warn("Plato/s añadidos al menu correctamente");
+} catch (error) {
+    console.error(error.message);
+}
 
 // console.log(manager);
 
@@ -220,10 +222,15 @@ try {
     console.error(error.message);
 }
 
-// //Mostrar los alergenos
-// for (let allergen of manager.allergenes) {
-//     console.log(allergen.toString());
+
+//Borrar alergeno
+// try {
+//     manager.removeAllergen(aler2);
+//     console.warn("Alergeno borrado correctamnete");
+// } catch (error) {
+//     console.error(error.message);
 // }
+
 
 // //Error por que ese alergeno ya existe
 // try {
@@ -234,34 +241,37 @@ try {
 // }
 
 
-
 // //Asignar alergenos a un plato
 try {
-    manager.assignAllergenToDish(plato1, aler1);
+    manager.assignAllergenToDish(plato1, aler1, aler2, aler3);
     console.warn("Alergenos asiganados correctamente");
 } catch (error) {
     console.error(error.message);
 }
 
+// console.log(manager);
+
 
 // //Asignar alergenos a un plato
-// // try {
-// //     manager.deassignAllergenToDish(plato1, aler3);
-// //     console.warn("Desasignado correctamente");
-// // } catch (error) {
-// //     console.error(error.message);
-// // }
-
-// console.log("------------------------------Restaurants--------------------------------------------------");
-// const restaurant1 = manager.createRestaurant("La casona");
-// const restaurant2 = manager.createRestaurant("La Fresita");
-
 // try {
-//     manager.addRestaurant(restaurant1, restaurant2);
-//     console.warn("Restaurantes añadidos correctamente");
+//     manager.deassignAllergenToDish(plato1, aler1);
+//     console.warn("Desasignado correctamente");
 // } catch (error) {
 //     console.error(error.message);
 // }
+
+// console.log(manager);
+
+console.log("------------------------------Restaurants--------------------------------------------------");
+const restaurant1 = manager.createRestaurant("La casona");
+const restaurant2 = manager.createRestaurant("La Fresita");
+
+try {
+    manager.addRestaurant(restaurant1, restaurant2);
+    console.warn("Restaurantes añadidos correctamente");
+} catch (error) {
+    console.error(error.message);
+}
 
 // for (let restaurant of manager.restaurants) {
 //     console.log(restaurant.toString());
@@ -277,3 +287,13 @@ try {
 // for (let restaurant of manager.restaurants) {
 //     console.log(restaurant.toString());
 // }
+
+
+try {
+    manager.removeDish(plato1);
+    console.warn("Plato borrado");
+} catch (error) {
+    console.error(error.message);
+}
+
+console.log(manager);
