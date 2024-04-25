@@ -36,6 +36,14 @@ class CategoryExistsException extends ManagerException {
     }
 }
 
+class CategoryNotExistException extends ManagerException {
+    constructor(category, fileName, lineNumber) {
+        super(`Error: The ${category.name} doesn't exist in the manager.`, fileName, lineNumber);
+        this.category = category;
+        this.name = 'CategoryNotExistException';
+    }
+}
+
 class DishExistsException extends ManagerException {
     constructor(dish, fileName, lineNumber) {
         super(`Error: The ${dish.name} already exists in the manager.`, fileName, lineNumber);
@@ -109,21 +117,21 @@ class DishExistInCategoryException extends ManagerException {
     }
 }
 
-class AllergenExistInDishException extends ManagerException {
-    constructor(allergen, dish, fileName, lineNumber) {
-        super(`Error: The ${allergen.name} already exist in ${dish.name}.`, fileName, lineNumber);
-        this.allergen = allergen;
-        this.dish = dish;
-        this.name = 'AllergenExistInDishException';
-    }
-}
-
 class DishNotExistInCategoryException extends ManagerException {
     constructor(dish, category, fileName, lineNumber) {
         super(`Error: The ${dish.name} doesn't exist in ${category.name}.`, fileName, lineNumber);
         this.category = category;
         this.dish = dish;
         this.name = 'DishNotExistInCategoryException';
+    }
+}
+
+class AllergenExistInDishException extends ManagerException {
+    constructor(allergen, dish, fileName, lineNumber) {
+        super(`Error: The ${allergen.name} already exist in ${dish.name}.`, fileName, lineNumber);
+        this.allergen = allergen;
+        this.dish = dish;
+        this.name = 'AllergenExistInDishException';
     }
 }
 
@@ -136,15 +144,6 @@ class AllergenNotExistInDishException extends ManagerException {
     }
 }
 
-class DishNotExistInMenuException extends ManagerException {
-    constructor(dish, menu, fileName, lineNumber) {
-        super(`Error: The ${dish.name} doesn't exist in ${menu.name}.`, fileName, lineNumber);
-        this.menu = menu;
-        this.dish = dish;
-        this.name = 'DishNotExistInMenuException';
-    }
-}
-
 class DishExistInMenuException extends ManagerException {
     constructor(dish, menu, fileName, lineNumber) {
         super(`Error: The ${dish.name} doesn't exist in ${menu.name}.`, fileName, lineNumber);
@@ -154,11 +153,12 @@ class DishExistInMenuException extends ManagerException {
     }
 }
 
-class CategoryNotExistException extends ManagerException {
-    constructor(category, fileName, lineNumber) {
-        super(`Error: The ${category.name} doesn't exist in the manager.`, fileName, lineNumber);
-        this.category = category;
-        this.name = 'CategoryNotExistException';
+class DishNotExistInMenuException extends ManagerException {
+    constructor(dish, menu, fileName, lineNumber) {
+        super(`Error: The ${dish.name} doesn't exist in ${menu.name}.`, fileName, lineNumber);
+        this.menu = menu;
+        this.dish = dish;
+        this.name = 'DishNotExistInMenuException';
     }
 }
 
@@ -179,12 +179,12 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             constructor() {
                 Object.defineProperty(this, 'dishes', {
                     enumerable: true,
-                    get() {
-                        const array = this.#dishes;
+                    get() { // Define un método 'get' para la propiedad 'dishes'
+                        const array = this.#dishes; // Obtiene el array privado asociado a 'dishes'
                         return {
-                            *[Symbol.iterator]() {
-                                for (const dish of array) {
-                                    yield dish;
+                            *[Symbol.iterator]() { // Define un iterador para el array
+                                for (const dish of array) { // Itera sobre cada elemento del array
+                                    yield dish; // Devuelve el elemento actual del array
                                 }
                             },
                         };
@@ -248,18 +248,16 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 });
             }
 
-            //Dado un plato, devuelve su posición
-            //Comparamos por contenido no por referencia.
+            //Dado un plato, devuelve su posición.
             #getDishPosition(name) {
                 function compareElements(element) {
-                    return (element.name === name)
+                    return (element.name === name); // Devuelve true si el nombre del elemento coincide con el nombre dado
                 }
-
+                // Utiliza 'findIndex' para encontrar la posición del primer elemento en '#dishes' cuyo nombre coincida con 'name'
                 return this.#dishes.findIndex(compareElements);
             }
 
             //Dado una categoría, devuelve su posición
-            //Comparamos por contenido no por referencia.
             #getCategoryPosition(name) {
                 function compareElements(element) {
                     return (element.category.name === name)
@@ -269,7 +267,6 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             }
 
             //Dado un allergeno, devuelve su posición 
-            //Comparamos por contenido no por referencia.
             #getAllergenPosition(name) {
                 function compareElements(element) {
                     return (element.allergen.name === name)
@@ -278,7 +275,6 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             }
 
             //Dado un menu, devuelve su posicion
-            //Comparamos por contenido no por referencia.
             #getMenuPosition(name) {
                 function compareElements(element) {
                     return (element.menu.name === name);
@@ -288,7 +284,6 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             }
 
             //Dado un restaurante, devuelve su posicion
-            //Comparamos por contenido no por referencia.
             #getRestaurantPosition(name) {
                 function compareElements(element) {
                     return (element.name === name);
@@ -307,17 +302,18 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     throw new CategoryNotExistException(category);
                 }
                 let dishes;
+                // Si se proporciona una función de ordenamiento, clona y ordena los platos según esa función
                 if (ordered) {
                     dishes = [...this.#categories[positionCat].dishes];
                     dishes.sort(ordered);
                 } else {
+                    // Si no se proporciona una función de ordenamiento, simplemente obtiene los platos de la categoría
                     dishes = this.#categories[positionCat].dishes;
                 }
-
+                // Genera cada plato en la categoría
                 for (let dish of dishes) {
-                    yield dish;
+                    yield dish;// Devuelve el plato actual
                 }
-
             }
 
             // Obtiene un iterador con los platos que tienen un determinado alérgeno.
@@ -352,10 +348,10 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 };
             }
 
-
             //Obtiene un iterador que cumpla un criterio concreto en base a una función de callback. El iterador puede estar ordenado.
             *findDishes(filter, ordered) {
                 let dishes;
+                // Si se proporciona una función de ordenamiento, clona y ordena los platos según esa función
                 if (ordered) {
                     dishes = [...this.#dishes];
                     dishes.sort(ordered);
@@ -364,23 +360,13 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 }
 
                 for (let dish of dishes) {
+                    // Si el plato coincide con el filtro dado por la función 'filter'
                     if (filter(dish)) {
-                        yield dish
+                        yield dish; // Devuelve el plato actual
                     }
 
                 }
             }
-
-            // Definición del atributo systemName
-            get systemName() {
-                return this.#systemName;
-            }
-            set systemName(systemName) {
-                systemName = systemName.trim();
-                if (systemName === 'undefined' || systemName === '') throw new EmptyValueException("systemName");
-                this.#systemName = systemName;
-            }
-
 
             //*****************************************************************DISH***********************************************************************************
 
@@ -390,8 +376,9 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     if (!(dish instanceof Dish)) {
                         throw new ObjecManagerException('dish', 'Dish');
                     }
+                    // Obtiene la posición del plato en el manager de objetos
                     let position = this.#getDishPosition(dish.name);
-                    if (position === -1) {
+                    if (position === -1) {  // Si el plato no existe en el manager, lo añade
                         this.#dishes.push(dish);
                     } else {
                         throw new DishExistsException(dish);
@@ -403,8 +390,8 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
             //Devuelve un objeto Dish si está registrado, o crea un nuevo
             createDish(name, description = "", ingredients = [], image = "") {
                 let position = this.#getDishPosition(name);
-                if (position != -1) return this.#dishes[position];
-                return new Dish(name, description, ingredients, image);
+                if (position != -1) return this.#dishes[position]; // Si el plato ya existe en el manager, lo devuelve
+                return new Dish(name, description, ingredients, image); // Si el plato no existe, crea uno nuevo y lo devuelve
             }
 
             //Elimina un plato y todas sus asignaciones a categorías, alérgenos y menús.
@@ -437,7 +424,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                     this.#dishes.splice(positionDish, 1);
                     return this;
                 } else {
-                    throw new DishNotExistException(dish);
+                    throw new DishNotExistsException(dish);
                 }
             }
 
@@ -502,6 +489,7 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                         throw new DishExistInCategoryException(dish, category);
                     }
 
+                    // Asigna el plato a la categoría
                     this.#categories[positionCat].dishes.push(this.#dishes[positionDish]);
                 }
                 return this;
@@ -867,14 +855,6 @@ let RestaurantsManager = (function () { //La función anónima devuelve un méto
                 }
                 return this;
             }
-
-
-
-
-
-
-
-
 
         }
         let instance = new RestaurantsManager();//Devolvemos el objeto RestaurantsManager para que sea una instancia única.
