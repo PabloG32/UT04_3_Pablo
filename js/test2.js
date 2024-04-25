@@ -3,9 +3,6 @@ import RestaurantsManager from './restaurantsManager2.js';
 
 const manager = RestaurantsManager.getInstance();
 
-//Funciones
-
-
 console.log("------------------------------Dish--------------------------------------------------");
 
 // // Añadir platos
@@ -90,13 +87,13 @@ try {
 
 // //Uso del getDishInCategory
 try {
-    let dishcat4 = manager.getDishesInCategory(cat1, (elemA, elemB) => {
+    let dishcat1 = manager.getDishesInCategory(cat1, (elemA, elemB) => {
         let order = elemA.name < elemB.name ? -1 : 1;
         return order;
     });
-    console.log("Platos de la cat1:")
-    for (const dish of dishcat4) {
-        console.log(dish.toString())
+    console.warn("Platos de la categoria 1:")
+    for (const dish of dishcat1) {
+        console.log("-" + dish.toString())
     }
 } catch (error) {
     console.error(error.message);
@@ -107,7 +104,7 @@ try {
     let foundDishes = manager.findDishes((dish) => dish.name === 'Plato 3' || dish.name === 'Plato 2');
     console.warn("Busando platos 2 y 3:")
     for (const dish of foundDishes) {
-        console.log(dish.toString())
+        console.log("-" + dish.toString())
     }
 } catch (error) {
     console.error(error.message);
@@ -148,11 +145,15 @@ try {
 } catch (error) {
     console.error(error.message);
 }
+//Mostrar los menus
+for (let menu of manager.menus) {
+    console.log(menu.toString());
+}
 
 //Asigna uno o varios platos al menu
 try {
     manager.assignDishToMenu(menu1, plato1, platoCambio2, plato2, plato3, platoCambio1);
-    console.warn("Plato/s añadidos al menu correctamente");
+    console.warn("Plato/s asignados al menu correctamente");
 } catch (error) {
     console.error(error.message);
 }
@@ -168,9 +169,13 @@ try {
 //Asigna uno o varios platos al menu, pero como no existen los crea
 try {
     manager.assignDishToMenu(menuCreado, platoCreado);
-    console.warn("Plato/s añadidos al menu correctamente");
+    console.warn("Plato/s asignanos al menu correctamente");
 } catch (error) {
     console.error(error.message);
+}
+//Mostrar los menus
+for (let menu of manager.menus) {
+    console.log(menu.toString());
 }
 
 // //Desasignar un plato
@@ -179,11 +184,6 @@ try {
     console.warn("Plato/s desasignados correctamente del menu");
 } catch (error) {
     console.error(error.message);
-}
-
-//Mostrar los menus
-for (let menu of manager.menus) {
-    console.log(menu.toString());
 }
 
 // //Borrar un menu
@@ -217,6 +217,11 @@ try {
     console.error(error.message);
 }
 
+//Mostrar los allergenos
+for (let allergen of manager.allergenes) {
+    console.log(allergen.toString());
+}
+
 
 //Borrar alergeno
 try {
@@ -226,7 +231,12 @@ try {
     console.error(error.message);
 }
 
-// //Error por que ese alergeno ya existe
+//Mostrar los allergenos
+for (let allergen of manager.allergenes) {
+    console.log(allergen.toString());
+}
+
+//Error por que ese alergeno ya existe
 try {
     manager.addAllergen(aler2);
     console.warn("Alergeno añadido correctamnete");
@@ -234,7 +244,7 @@ try {
     console.error(error.message);
 }
 
-// //Asignar alergenos a un plato
+//Asignar alergenos a un plato
 try {
     manager.assignAllergenToDish(plato1, aler1, aler2, aler3);
     console.warn("Alergenos asiganados correctamente");
